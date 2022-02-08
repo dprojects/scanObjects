@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 1.1 (entry level)
+# Version: 1.2 (entry level)
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD, Draft, Spreadsheet
@@ -58,24 +58,40 @@ def showQtGUI():
 			self.list.move(10, 30)
 
 			# ############################################################################
+			# select root path
+			# ############################################################################
+
+			# label
+			self.rootL = QtGui.QLabel("Select root path:", self)
+			self.rootL.move(10, 440)
+			
+			# options
+			self.rootList = ("my project root","FreeCAD")
+			self.rootO = QtGui.QComboBox(self)
+			self.rootO.addItems(self.rootList)
+			self.rootO.setCurrentIndex(self.rootList.index("my project root"))
+			self.rootO.activated[str].connect(self.setRootPath)
+			self.rootO.move(10, 460)
+
+			# ############################################################################
 			# info box
 			# ############################################################################
 
 			# label
 			self.i0L = QtGui.QLabel("Usage:", self)
-			self.i0L.move(10, 440)
+			self.i0L.move(10, 500)
 
 			# label
 			self.i1L = QtGui.QLabel("→ \t | go deeper", self)
-			self.i1L.move(10, 460)
+			self.i1L.move(10, 520)
 
 			# label
 			self.i2L = QtGui.QLabel("← \t | go back", self)
-			self.i2L.move(10, 480)
+			self.i2L.move(10, 540)
 
 			# label
 			self.i3L = QtGui.QLabel("↑ ↓ \t | select object", self)
-			self.i3L.move(10, 500)
+			self.i3L.move(10, 560)
 			
 			# ############################################################################
 			# output 1
@@ -192,16 +208,41 @@ def showQtGUI():
 			# show
 			# ############################################################################
 
-			# init db
-			root = FreeCAD.activeDocument().Objects
-			rootS= "FreeCAD.activeDocument().Objects"
-			self.addSelection("", root, rootS)
+			# init default selection db
+			self.setRootPath("my project root")
 
 			self.show()
 		
 		# ############################################################################
 		# functions
 		# ############################################################################
+
+		def clearDB(self):
+
+			# database for selection
+			self.dbSO = [] # objects
+			self.dbSL = [] # labels
+			self.dbSI = -1 # index
+			self.dbSP = [] # path
+
+		def setRootPath(self, selectedText):
+
+			# clear db before root set
+			self.clearDB()
+
+			if selectedText == "my project root":
+
+				# init db
+				root = FreeCAD.activeDocument().Objects
+				rootS= "FreeCAD.activeDocument().Objects"
+				self.addSelection("", root, rootS)
+				
+			if selectedText == "FreeCAD":
+
+				# init db
+				root = dir(FreeCAD)
+				rootS= "FreeCAD"
+				self.addSelection(FreeCAD, root, rootS)
 
 		def setOutput(self, iObj):
 
