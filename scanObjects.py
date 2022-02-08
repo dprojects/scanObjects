@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 1.0 (entry level)
+# Version: 1.1 (entry level)
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD, Draft, Spreadsheet
@@ -26,7 +26,8 @@ def showQtGUI():
 		dbSO = [] # objects
 		dbSL = [] # labels
 		dbSI = -1 # index
-			
+		dbSP = [] # path
+
 		# ############################################################################
 		# init
 		# ############################################################################
@@ -55,9 +56,6 @@ def showQtGUI():
 			self.list.setMinimumSize(150, 400)
 			self.list.setMaximumSize(150, 400)
 			self.list.move(10, 30)
-
-			# init db
-			self.addSelection("", FreeCAD.activeDocument().Objects)
 
 			# ############################################################################
 			# info box
@@ -194,191 +192,220 @@ def showQtGUI():
 			# show
 			# ############################################################################
 
+			# init db
+			root = FreeCAD.activeDocument().Objects
+			rootS= "FreeCAD.activeDocument().Objects"
+			self.addSelection("", root, rootS)
+
 			self.show()
 		
 		# ############################################################################
-		# actions auto define
+		# functions
 		# ############################################################################
 
 		def setOutput(self, iObj):
 
-				index = iObj.indexes()[0].row()
+			index = iObj.indexes()[0].row()
 
-				# ########################################				
-				# output 1
-				# ########################################
+			# ########################################				
+			# output 1
+			# ########################################
 
-				skip = 0
+			skip = 0
 
-				try:
-					result = dir(self.dbSO[self.dbSI][index])
-				except:
-					skip = 1
+			try:
+				result = dir(self.dbSO[self.dbSI][index])
+			except:
+				skip = 1
 
-				try:
-					if skip == 0:
+			try:
+				if skip == 0:
+
+					o1 = ""
+					for row in result:
+						o1 += row + "\n"
+					
+					self.o1.setPlainText(o1)
+				else:
+					self.o1.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 2
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index].__dict__
+			except:
+				skip = 1
+
+			try:
+				if skip == 0:
+
+					o2 = ""
+					for row in result:
+						o2 += row + "\n"
+					
+					self.o2.setPlainText(o2)
+				else:
+					self.o2.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 3
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index].__doc__
+			except:
+				skip = 1
+
+			try:
+				if skip == 0:
+					self.o3.setPlainText(result)
+				else:
+					self.o3.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 4
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index].getAllDerivedFrom()
+			except:
+				skip = 1
+
+			try:
+				if skip == 0:
+
+					o4 = ""
+					for row in result:
+						o4 += row + "\n"
+					
+					self.o4.setPlainText(o4)
+				else:
+					self.o4.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 5
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index].Content
+			except:
+				skip = 1
+
+			try:
+				if skip == 0:
+					self.o5.setPlainText(result)
+				else:
+					self.o5.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 6
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index]
+			except:
+				skip = 1
+
+			try:
+				if skip == 0 and isinstance(result, str):
+					self.o6.setPlainText(str(result))
+				else:
+					self.o6.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 7
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index]
+			except:
+				skip = 1
+
+			try:
+				if skip == 0 and isinstance(result, float):
+					self.o7.setPlainText(str(result))
+				else:
+					self.o7.setPlainText("")
+			except:
+				skip = 1
+
+			# ########################################				
+			# output 8
+			# ########################################
+
+			skip = 0
+
+			try:
+				result = self.dbSO[self.dbSI][index]
+			except:
+				skip = 1
+
+			try:
+				if skip == 0 and isinstance(result, list):
+
+					o8 = ""
+					for row in result:
+						o8 += str(row) + "\n"
+					
+					self.o8.setPlainText(o8)
+				else:
+					self.o8.setPlainText("")
+			except:
+				skip = 1
 	
-						o1 = ""
-						for row in result:
-							o1 += row + "\n"
-						
-						self.o1.setPlainText(o1)
-					else:
-						self.o1.setPlainText("")
-				except:
-					skip = 1
+		def getSelectionPath(self):
 
-				# ########################################				
-				# output 2
-				# ########################################
+			path = ""
+			for item in self.dbSP:
+				path += "." + item + "\n"
 
-				skip = 0
+			return str(path)[1:]
 
-				try:
-					result = self.dbSO[self.dbSI][index].__dict__
-				except:
-					skip = 1
+		def resetOutputs(self):
 
-				try:
-					if skip == 0:
-	
-						o2 = ""
-						for row in result:
-							o2 += row + "\n"
-						
-						self.o2.setPlainText(o2)
-					else:
-						self.o2.setPlainText("")
-				except:
-					skip = 1
+			path = self.getSelectionPath()
 
-				# ########################################				
-				# output 3
-				# ########################################
+			info = ""
+			info += "Your current selection path is:"
+			info += "\n\n"
+			info += path
+			info += "\n\n"
+			info += "Use ↑ ↓ arrow keys to select object and start inspection at this path."
 
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index].__doc__
-				except:
-					skip = 1
-
-				try:
-					if skip == 0:
-						self.o3.setPlainText(result)
-					else:
-						self.o3.setPlainText("")
-				except:
-					skip = 1
-
-				# ########################################				
-				# output 4
-				# ########################################
-
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index].getAllDerivedFrom()
-				except:
-					skip = 1
-
-				try:
-					if skip == 0:
-	
-						o4 = ""
-						for row in result:
-							o4 += row + "\n"
-						
-						self.o4.setPlainText(o4)
-					else:
-						self.o4.setPlainText("")
-				except:
-					skip = 1
-
-				# ########################################				
-				# output 5
-				# ########################################
-
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index].Content
-				except:
-					skip = 1
-
-				try:
-					if skip == 0:
-						self.o5.setPlainText(result)
-					else:
-						self.o5.setPlainText("")
-				except:
-					skip = 1
-
-				# ########################################				
-				# output 6
-				# ########################################
-
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index]
-				except:
-					skip = 1
-
-				try:
-					if skip == 0 and isinstance(result, str):
-						self.o6.setPlainText(str(result))
-					else:
-						self.o6.setPlainText("")
-				except:
-					skip = 1
-
-				# ########################################				
-				# output 7
-				# ########################################
-
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index]
-				except:
-					skip = 1
-
-				try:
-					if skip == 0 and isinstance(result, float):
-						self.o7.setPlainText(str(result))
-					else:
-						self.o7.setPlainText("")
-				except:
-					skip = 1
-
-				# ########################################				
-				# output 8
-				# ########################################
-
-				skip = 0
-
-				try:
-					result = self.dbSO[self.dbSI][index]
-				except:
-					skip = 1
-
-				try:
-					if skip == 0 and isinstance(result, list):
-	
-						o8 = ""
-						for row in result:
-							o8 += str(row) + "\n"
-						
-						self.o8.setPlainText(o8)
-					else:
-						self.o8.setPlainText("")
-				except:
-					skip = 1
-	
-		# ############################################################################
-		# functions
-		# ############################################################################
+			self.o1.setPlainText(info)
+			self.o2.setPlainText("")
+			self.o3.setPlainText("")
+			self.o4.setPlainText("")
+			self.o5.setPlainText("")
+			self.o6.setPlainText("")
+			self.o7.setPlainText("")
+			self.o8.setPlainText("")
 
 		def updateSelection(self):
 
@@ -390,6 +417,7 @@ def showQtGUI():
 				self.list.setModel(model)
 			
 			self.list.selectionModel().selectionChanged.connect(self.setOutput)			
+			self.resetOutputs()
 
 		def removeSelection(self):
 
@@ -399,29 +427,29 @@ def showQtGUI():
 				self.dbSO.pop()
 				self.dbSL.pop()
 				self.dbSI = self.dbSI - 1
-				
+				self.dbSP.pop()
+
 				self.updateSelection()
 
-		def addSelection(self, iObj, iList):
+		def addSelection(self, iObj, iList, iPath):
+
+			tmpO = []
+			tmpL = []
 
 			# init selection view
 			if iObj == "":
-				self.dbSO.append(iList)
-				self.dbSI = self.dbSI + 1
-				self.dbSL.append([ o.Label for o in self.dbSO[self.dbSI] ])
+				tmpO = iList
+				tmpL = [ o.Label for o in tmpO ]
 
 			# if object is list (eg. faces, edges)
 			elif isinstance(iObj, list):
 
-				self.dbSO.append(iObj)
-				self.dbSL.append(iObj)
-				self.dbSI = self.dbSI + 1
+				tmpO = iObj
+				tmpL = iObj
 
 			# all objects types
 			else:
 
-				tmpO = []
-				tmpL = []
 				for o in iList:
 					try:
 						if hasattr(iObj, o):
@@ -430,12 +458,17 @@ def showQtGUI():
 					except:
 						skip = 1
 
+			# not add empty lists (this stuck)
+			if len(tmpO) > 0 and len(tmpL) > 0:
+
+				# update db
 				self.dbSO.append(tmpO)
 				self.dbSL.append(tmpL)
 				self.dbSI = self.dbSI + 1
+				self.dbSP.append(iPath)
 
-			# update selection list
-			self.updateSelection()
+				# update selection list
+				self.updateSelection()
 
 		# ############################################################################
 		# actions for keyboard keys
@@ -449,6 +482,7 @@ def showQtGUI():
 			try:
 				index = self.list.currentIndex().row()
 				Obj = self.dbSO[self.dbSI][index]
+				path = str(self.dbSL[self.dbSI][index])
 				
 				if isinstance(Obj, str):
 					skip = 1
@@ -456,10 +490,10 @@ def showQtGUI():
 					skip = 1
 				elif isinstance(Obj, list):
 					newList = Obj
-					self.addSelection(Obj, newList)
+					self.addSelection(Obj, newList, path)
 				else:
 					newList = dir(Obj)
-					self.addSelection(Obj, newList)
+					self.addSelection(Obj, newList, path)
 			except:
 				skip = 1
 	
