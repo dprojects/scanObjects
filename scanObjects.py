@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 1.2 (entry level)
+# Version: 2.0 ( looks stable )
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD, Draft, Spreadsheet
@@ -66,7 +66,7 @@ def showQtGUI():
 			self.rootL.move(10, 440)
 			
 			# options
-			self.rootList = ("my project root","FreeCAD")
+			self.rootList = ("my project root","FreeCAD", "QtGui", "QtCore")
 			self.rootO = QtGui.QComboBox(self)
 			self.rootO.addItems(self.rootList)
 			self.rootO.setCurrentIndex(self.rootList.index("my project root"))
@@ -230,19 +230,31 @@ def showQtGUI():
 			# clear db before root set
 			self.clearDB()
 
+			from PySide import QtGui, QtCore
+
 			if selectedText == "my project root":
 
-				# init db
 				root = FreeCAD.activeDocument().Objects
 				rootS= "FreeCAD.activeDocument().Objects"
 				self.addSelection("", root, rootS)
 				
 			if selectedText == "FreeCAD":
 
-				# init db
 				root = dir(FreeCAD)
 				rootS= "FreeCAD"
 				self.addSelection(FreeCAD, root, rootS)
+
+			if selectedText == "QtGui":
+
+				root = dir(QtGui)
+				rootS= "QtGui"
+				self.addSelection(QtGui, root, rootS)
+
+			if selectedText == "QtCore":
+
+				root = dir(QtCore)
+				rootS= "QtCore"
+				self.addSelection(QtCore, root, rootS)
 
 		def setOutput(self, iObj):
 
