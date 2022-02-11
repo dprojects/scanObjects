@@ -2,10 +2,10 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.0 ( looks stable )
+# Version: 2.1
 # Latest version: https://github.com/dprojects/scanObjects
 
-import FreeCAD, Draft, Spreadsheet
+import FreeCAD
 from PySide import QtGui, QtCore
 
 
@@ -27,6 +27,8 @@ def showQtGUI():
 		dbSL = [] # labels
 		dbSI = -1 # index
 		dbSP = [] # path
+		dbSLI = [] # last index
+		defaultRoot = ""
 
 		# ############################################################################
 		# init
@@ -37,6 +39,13 @@ def showQtGUI():
 			self.initUI()
 
 		def initUI(self):
+
+			# set default 
+			try:
+				test = FreeCAD.activeDocument().Objects
+				self.defaultRoot = "project"
+			except:
+				self.defaultRoot = "FreeCAD"
 
 			# window
 			self.result = userCancelled
@@ -66,33 +75,35 @@ def showQtGUI():
 			self.rootL.move(10, 440)
 			
 			# options
-			self.rootList = ("my project root","FreeCAD", "QtGui", "QtCore")
+			self.rootList = ("my project root","FreeCAD", "QtGui", "QtCore", "Path", "Draft")
 			self.rootO = QtGui.QComboBox(self)
 			self.rootO.addItems(self.rootList)
-			self.rootO.setCurrentIndex(self.rootList.index("my project root"))
+			if self.defaultRoot == "project":
+				self.rootO.setCurrentIndex(self.rootList.index("my project root"))
+			else:
+				self.rootO.setCurrentIndex(self.rootList.index("FreeCAD"))
 			self.rootO.activated[str].connect(self.setRootPath)
 			self.rootO.move(10, 460)
 
 			# ############################################################################
-			# info box
+			# custom module
 			# ############################################################################
 
 			# label
-			self.i0L = QtGui.QLabel("Usage:", self)
-			self.i0L.move(10, 500)
+			self.rootCL = QtGui.QLabel("Custom module:", self)
+			self.rootCL.move(10, 490)
 
-			# label
-			self.i1L = QtGui.QLabel("→ \t | go deeper", self)
-			self.i1L.move(10, 520)
-
-			# label
-			self.i2L = QtGui.QLabel("← \t | go back", self)
-			self.i2L.move(10, 540)
-
-			# label
-			self.i3L = QtGui.QLabel("↑ ↓ \t | select object", self)
-			self.i3L.move(10, 560)
+			# text input
+			self.rootCO = QtGui.QLineEdit(self)
+			self.rootCO.setText("")
+			self.rootCO.setFixedWidth(70)
+			self.rootCO.move(10, 510)
 			
+			# button
+			self.rootCLoad = QtGui.QPushButton("load", self)
+			self.rootCLoad.clicked.connect(self.loadCustomModule)
+			self.rootCLoad.move(90, 510)
+
 			# ############################################################################
 			# output 1
 			# ############################################################################
@@ -209,13 +220,30 @@ def showQtGUI():
 			# ############################################################################
 
 			# init default selection db
-			self.setRootPath("my project root")
+			if self.defaultRoot == "project":
+				self.setRootPath("my project root")
+			else:
+				self.setRootPath("FreeCAD")
 
 			self.show()
 		
 		# ############################################################################
 		# functions
 		# ############################################################################
+
+		def showError(self, iError):
+		
+			FreeCAD.Console.PrintMessage("\n ====================================================== \n")
+			
+			try:
+				FreeCAD.Console.PrintMessage("ERROR: ")
+				FreeCAD.Console.PrintMessage(" | ")
+				FreeCAD.Console.PrintMessage(str(iError))
+				
+			except:
+				FreeCAD.Console.PrintMessage("FATAL ERROR, or even worse :-)")
+				
+			FreeCAD.Console.PrintMessage("\n ====================================================== \n")
 
 		def clearDB(self):
 
@@ -224,38 +252,75 @@ def showQtGUI():
 			self.dbSL = [] # labels
 			self.dbSI = -1 # index
 			self.dbSP = [] # path
+			self.dbSLI = [] # last index
 
 		def setRootPath(self, selectedText):
 
 			# clear db before root set
 			self.clearDB()
 
-			from PySide import QtGui, QtCore
-
 			if selectedText == "my project root":
-
-				root = FreeCAD.activeDocument().Objects
-				rootS= "FreeCAD.activeDocument().Objects"
-				self.addSelection("", root, rootS)
+				
+				if self.defaultRoot == "FreeCAD":
+					self.showError("You have to set active document (project) to use this root path.")
+				else:
+					root = FreeCAD.activeDocument().Objects
+					rootS= "FreeCAD.activeDocument().Objects"
+					self.addSelection("", root, rootS, -1)
 				
 			if selectedText == "FreeCAD":
 
 				root = dir(FreeCAD)
 				rootS= "FreeCAD"
-				self.addSelection(FreeCAD, root, rootS)
+				self.addSelection(FreeCAD, root, rootS, -1)
 
 			if selectedText == "QtGui":
 
+				from PySide import QtGui
+
 				root = dir(QtGui)
 				rootS= "QtGui"
-				self.addSelection(QtGui, root, rootS)
+				self.addSelection(QtGui, root, rootS, -1)
 
 			if selectedText == "QtCore":
 
+				from PySide import QtCore
+
 				root = dir(QtCore)
 				rootS= "QtCore"
-				self.addSelection(QtCore, root, rootS)
+				self.addSelection(QtCore, root, rootS, -1)
 
+			if selectedText == "Path":
+
+				import Path
+
+				root = dir(Path)
+				rootS= "Path"
+				self.addSelection(Path, root, rootS, -1)
+
+			if selectedText == "Draft":
+
+				import Draft
+
+				root = dir(Draft)
+				rootS= "Draft"
+				self.addSelection(Draft, root, rootS, -1)
+
+		def loadCustomModule(self):
+
+			try:
+				rootS = str(self.rootCO.text())
+				module = __import__(rootS, globals(), locals(), [], 0)
+				root = dir(module)
+
+				# clear db before root set
+				self.clearDB()
+				
+				self.addSelection(module, root, rootS, -1)
+
+			except:
+				self.showError("Can't load module: "+rootS)
+				
 		def setOutput(self, iObj):
 
 			index = iObj.indexes()[0].row()
@@ -448,6 +513,14 @@ def showQtGUI():
 			info += "Your current selection path is:"
 			info += "\n\n"
 			info += path
+			info += "\n\n\n"
+			info += "Usage:"
+			info += "\n"
+			info += "→ \t | go deeper"
+			info += "\n"
+			info += "← \t | go back"
+			info += "\n"
+			info += "↑ ↓ \t | select object"
 			info += "\n\n"
 			info += "Use ↑ ↓ arrow keys to select object and start inspection at this path."
 
@@ -468,8 +541,8 @@ def showQtGUI():
 				item = QtGui.QStandardItem(str(o))
 				model.appendRow(item)
 				self.list.setModel(model)
-			
-			self.list.selectionModel().selectionChanged.connect(self.setOutput)			
+
+			self.list.selectionModel().selectionChanged.connect(self.setOutput)
 			self.resetOutputs()
 
 		def removeSelection(self):
@@ -479,12 +552,30 @@ def showQtGUI():
 
 				self.dbSO.pop()
 				self.dbSL.pop()
-				self.dbSI = self.dbSI - 1
 				self.dbSP.pop()
+				self.dbSI = self.dbSI - 1
 
 				self.updateSelection()
 
-		def addSelection(self, iObj, iList, iPath):
+			# set last visited
+			try:
+				item = self.dbSLI[self.dbSI]
+				flag = QtCore.QItemSelectionModel.Select
+				self.list.selectionModel().setCurrentIndex(item, flag)
+				flag = QtGui.QAbstractItemView.EnsureVisible.PositionAtCenter
+				self.list.scrollTo(item, flag)
+
+			except:
+				FreeCAD.Console.PrintMessage("\n Except")
+				skip = 1
+
+			# remove last selected
+			if self.dbSI > 0:
+				self.dbSLI.pop()
+
+			self.resetOutputs()
+
+		def addSelection(self, iObj, iList, iPath, iSelected):
 
 			tmpO = []
 			tmpL = []
@@ -517,8 +608,13 @@ def showQtGUI():
 				# update db
 				self.dbSO.append(tmpO)
 				self.dbSL.append(tmpL)
-				self.dbSI = self.dbSI + 1
 				self.dbSP.append(iPath)
+
+				# not select at init
+				if iSelected != -1:
+					self.dbSLI.insert(self.dbSI, iSelected)
+
+				self.dbSI = self.dbSI + 1
 
 				# update selection list
 				self.updateSelection()
@@ -533,7 +629,8 @@ def showQtGUI():
 		def keyRight(self):
 
 			try:
-				index = self.list.currentIndex().row()
+				selected = self.list.currentIndex()
+				index = selected.row()
 				Obj = self.dbSO[self.dbSI][index]
 				path = str(self.dbSL[self.dbSI][index])
 				
@@ -543,10 +640,10 @@ def showQtGUI():
 					skip = 1
 				elif isinstance(Obj, list):
 					newList = Obj
-					self.addSelection(Obj, newList, path)
+					self.addSelection(Obj, newList, path, selected)
 				else:
 					newList = dir(Obj)
-					self.addSelection(Obj, newList, path)
+					self.addSelection(Obj, newList, path, selected)
 			except:
 				skip = 1
 	

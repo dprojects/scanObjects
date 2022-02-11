@@ -8,10 +8,6 @@ This is inspection tool for FreeCAD macro development.
 
 ![003](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/003.png)
 
-![004](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/004.png)
-
-![005](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/005.png)
-
 # Contact
 
 Please add all comments and questions to the dedicated
