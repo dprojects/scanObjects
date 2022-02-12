@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.1
+# Version: 2.2
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD
@@ -75,7 +75,17 @@ def showQtGUI():
 			self.rootL.move(10, 440)
 			
 			# options
-			self.rootList = ("my project root","FreeCAD", "QtGui", "QtCore", "Path", "Draft")
+			self.rootList = (
+				"my project root",
+				"FreeCAD", 
+				"QtGui", 
+				"QtCore", 
+				"Path", 
+				"Draft", 
+				"TechDraw", 
+				"Spreadsheet"
+			)
+
 			self.rootO = QtGui.QComboBox(self)
 			self.rootO.addItems(self.rootList)
 			if self.defaultRoot == "project":
@@ -233,18 +243,16 @@ def showQtGUI():
 
 		def showError(self, iError):
 		
-			FreeCAD.Console.PrintMessage("\n ====================================================== \n")
-			
 			try:
-				FreeCAD.Console.PrintMessage("ERROR: ")
-				FreeCAD.Console.PrintMessage(" | ")
-				FreeCAD.Console.PrintMessage(str(iError))
-				
-			except:
-				FreeCAD.Console.PrintMessage("FATAL ERROR, or even worse :-)")
-				
-			FreeCAD.Console.PrintMessage("\n ====================================================== \n")
+				e = ""
+				e += "ERROR: "
+				e += " | "
+				e += str(iError)
 
+				self.o5.setPlainText(e)
+			except:
+				self.o5.setPlainText("kernel panic or even FreeCAD panic :-)")
+				
 		def clearDB(self):
 
 			# database for selection
@@ -260,14 +268,14 @@ def showQtGUI():
 			self.clearDB()
 
 			if selectedText == "my project root":
-				
-				if self.defaultRoot == "FreeCAD":
-					self.showError("You have to set active document (project) to use this root path.")
-				else:
+					
+				try:
 					root = FreeCAD.activeDocument().Objects
 					rootS= "FreeCAD.activeDocument().Objects"
 					self.addSelection("", root, rootS, -1)
-				
+				except:
+					self.showError("You have to set active document (project) to use this root path.")
+
 			if selectedText == "FreeCAD":
 
 				root = dir(FreeCAD)
@@ -305,6 +313,22 @@ def showQtGUI():
 				root = dir(Draft)
 				rootS= "Draft"
 				self.addSelection(Draft, root, rootS, -1)
+
+			if selectedText == "TechDraw":
+
+				import TechDraw
+
+				root = dir(TechDraw)
+				rootS= "TechDraw"
+				self.addSelection(TechDraw, root, rootS, -1)
+
+			if selectedText == "Spreadsheet":
+
+				import Spreadsheet
+
+				root = dir(Spreadsheet)
+				rootS= "Spreadsheet"
+				self.addSelection(Spreadsheet, root, rootS, -1)
 
 		def loadCustomModule(self):
 
@@ -557,16 +581,19 @@ def showQtGUI():
 
 				self.updateSelection()
 
-			# set last visited
+			# set last selected
 			try:
+
+				# select item
 				item = self.dbSLI[self.dbSI]
 				flag = QtCore.QItemSelectionModel.Select
 				self.list.selectionModel().setCurrentIndex(item, flag)
+
+				# scroll to item
 				flag = QtGui.QAbstractItemView.EnsureVisible.PositionAtCenter
 				self.list.scrollTo(item, flag)
 
 			except:
-				FreeCAD.Console.PrintMessage("\n Except")
 				skip = 1
 
 			# remove last selected
