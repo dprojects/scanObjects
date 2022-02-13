@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.2
+# Version: 2.3
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD
@@ -28,7 +28,11 @@ def showQtGUI():
 		dbSI = -1 # index
 		dbSP = [] # path
 		dbSLI = [] # last index
+
+		# globals
 		defaultRoot = ""
+		gW = 1200 # width
+		gH = 600 # hight
 
 		# ############################################################################
 		# init
@@ -49,7 +53,7 @@ def showQtGUI():
 
 			# window
 			self.result = userCancelled
-			self.setGeometry(10, 10, 1200, 600)
+			self.setGeometry(10, 10, self.gW, self.gH)
 			self.setWindowTitle("scanObjects - inspection tool for macro development")
 			self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
 
@@ -57,14 +61,11 @@ def showQtGUI():
 			# selection view
 			# ############################################################################
 
-			# label
-			self.objectsL = QtGui.QLabel("Select object:", self)
-			self.objectsL.move(10, 10)
-			
-			self.list = QtGui.QListView(self)
-			self.list.setMinimumSize(150, 400)
-			self.list.setMaximumSize(150, 400)
-			self.list.move(10, 30)
+			self.list = QtGui.QListView()
+			self.listsw = QtGui.QMdiSubWindow(self)
+			self.listsw.setWindowTitle("Select object:")
+			self.listsw.setGeometry(0, 0, 180, 430)
+			self.listsw.setWidget(self.list)
 
 			# ############################################################################
 			# select root path
@@ -112,111 +113,109 @@ def showQtGUI():
 			# button
 			self.rootCLoad = QtGui.QPushButton("load", self)
 			self.rootCLoad.clicked.connect(self.loadCustomModule)
-			self.rootCLoad.move(90, 510)
+			self.rootCLoad.move(85, 510)
+
+			# ############################################################################
+			# select windows layout
+			# ############################################################################
+
+			# label
+			self.layL = QtGui.QLabel("Select windows layout:", self)
+			self.layL.move(10, 540)
+			
+			# options
+			self.layList = (
+				"all windows",
+				"content", 
+				"docs", 
+				"array"
+			)
+
+			self.layO = QtGui.QComboBox(self)
+			self.layO.addItems(self.layList)
+			self.layO.setCurrentIndex(self.layList.index("all windows"))
+			self.layO.activated[str].connect(self.setWindowsLayout)
+			self.layO.move(10, 560)
 
 			# ############################################################################
 			# output 1
 			# ############################################################################
 
-			# label
-			self.o1L = QtGui.QLabel("dir():", self)
-			self.o1L.move(180, 10)
-			
-			self.o1 = QtGui.QTextEdit(self)
-			self.o1.setMinimumSize(250, 400)
-			self.o1.setMaximumSize(250, 400)
-			self.o1.move(180, 30)
+			self.o1 = QtGui.QTextEdit()
+			self.o1sw = QtGui.QMdiSubWindow(self)
+			self.o1sw.setWindowTitle("dir(): & Help Window")
+			self.o1sw.setGeometry(180, 0, 260, 430)
+			self.o1sw.setWidget(self.o1)
 
 			# ############################################################################
 			# output 2
 			# ############################################################################
-
-			# label
-			self.o2L = QtGui.QLabel("__dict__:", self)
-			self.o2L.move(450, 10)
 			
-			self.o2 = QtGui.QTextEdit(self)
-			self.o2.setMinimumSize(200, 400)
-			self.o2.setMaximumSize(200, 400)
-			self.o2.move(450, 30)
-
+			self.o2 = QtGui.QTextEdit()
+			self.o2sw = QtGui.QMdiSubWindow(self)
+			self.o2sw.setWindowTitle("__dict__:")
+			self.o2sw.setGeometry(440, 0, 220, 430)
+			self.o2sw.setWidget(self.o2)
+			
 			# ############################################################################
 			# output 3
 			# ############################################################################
 
-			# label
-			self.o3L = QtGui.QLabel("__doc__:", self)
-			self.o3L.move(670, 10)
-			
-			self.o3 = QtGui.QTextEdit(self)
-			self.o3.setMinimumSize(300, 140)
-			self.o3.setMaximumSize(300, 140)
-			self.o3.move(670, 30)
+			self.o3 = QtGui.QTextEdit()
+			self.o3sw = QtGui.QMdiSubWindow(self)
+			self.o3sw.setWindowTitle("__doc__:")
+			self.o3sw.setGeometry(660, 0, 320, 150)
+			self.o3sw.setWidget(self.o3)
 
 			# ############################################################################
 			# output 4
 			# ############################################################################
 
-			# label
-			self.o4L = QtGui.QLabel("getAllDerivedFrom():", self)
-			self.o4L.move(670, 240)
-			
-			self.o4 = QtGui.QTextEdit(self)
-			self.o4.setMinimumSize(300, 70)
-			self.o4.setMaximumSize(300, 70)
-			self.o4.move(670, 260)
+			self.o4 = QtGui.QTextEdit()
+			self.o4sw = QtGui.QMdiSubWindow(self)
+			self.o4sw.setWindowTitle("getAllDerivedFrom():")
+			self.o4sw.setGeometry(660, 230, 320, 100)
+			self.o4sw.setWidget(self.o4)
 
 			# ############################################################################
 			# output 5
 			# ############################################################################
 
-			# label
-			self.o5L = QtGui.QLabel("Content:", self)
-			self.o5L.move(180, 440)
-			
-			self.o5 = QtGui.QTextEdit(self)
-			self.o5.setMinimumSize(1000, 120)
-			self.o5.setMaximumSize(1000, 120)
-			self.o5.move(180, 460)
+			self.o5 = QtGui.QTextEdit()
+			self.o5sw = QtGui.QMdiSubWindow(self)
+			self.o5sw.setWindowTitle("Content & Error Console:")
+			self.o5sw.setGeometry(180, 430, 1020, 170)
+			self.o5sw.setWidget(self.o5)
 
 			# ############################################################################
 			# output 6
 			# ############################################################################
 
-			# label
-			self.o6L = QtGui.QLabel("<class 'str'>:", self)
-			self.o6L.move(670, 340)
-			
-			self.o6 = QtGui.QTextEdit(self)
-			self.o6.setMinimumSize(510, 70)
-			self.o6.setMaximumSize(510, 70)
-			self.o6.move(670, 360)
+			self.o6 = QtGui.QTextEdit()
+			self.o6sw = QtGui.QMdiSubWindow(self)
+			self.o6sw.setWindowTitle("<class 'str'>:")
+			self.o6sw.setGeometry(660, 330, 540, 100)
+			self.o6sw.setWidget(self.o6)
 
 			# ############################################################################
 			# output 7
 			# ############################################################################
 
-			# label
-			self.o7L = QtGui.QLabel("<class 'float'>:", self)
-			self.o7L.move(670, 180)
-			
-			self.o7 = QtGui.QTextEdit(self)
-			self.o7.setMinimumSize(300, 30)
-			self.o7.setMaximumSize(300, 30)
-			self.o7.move(670, 200)
+			self.o7 = QtGui.QTextEdit()
+			self.o7sw = QtGui.QMdiSubWindow(self)
+			self.o7sw.setWindowTitle("<class 'float'>:")
+			self.o7sw.setGeometry(660, 150, 320, 80)
+			self.o7sw.setWidget(self.o7)
 
 			# ############################################################################
 			# output 8
 			# ############################################################################
 
-			# label
-			self.o8L = QtGui.QLabel("<class 'list'>:", self)
-			self.o8L.move(980, 10)
-			
-			self.o8 = QtGui.QTextEdit(self)
-			self.o8.setMinimumSize(200, 300)
-			self.o8.setMaximumSize(200, 300)
-			self.o8.move(980, 30)
+			self.o8 = QtGui.QTextEdit()
+			self.o8sw = QtGui.QMdiSubWindow(self)
+			self.o8sw.setWindowTitle("<class 'list'>:")
+			self.o8sw.setGeometry(980, 0, 220, 330)
+			self.o8sw.setWidget(self.o8)
 
 			# ############################################################################
 			# keyboard keys
@@ -240,6 +239,111 @@ def showQtGUI():
 		# ############################################################################
 		# functions
 		# ############################################################################
+
+		def setWindowsLayout(self, selectedText):
+
+			if selectedText == "all windows":
+				self.listsw.setGeometry(0, 0, 180, 430)
+				self.listsw.show()
+				self.list.show()
+				self.o1sw.setGeometry(180, 0, 260, 430)
+				self.o1sw.show()
+				self.o1.show()
+				self.o2sw.setGeometry(440, 0, 220, 430)
+				self.o2sw.show()
+				self.o2.show()
+				self.o3sw.setGeometry(660, 0, 320, 150)
+				self.o3sw.show()
+				self.o3.show()
+				self.o4sw.setGeometry(660, 230, 320, 100)
+				self.o4sw.show()
+				self.o4.show()
+				self.o5sw.setGeometry(180, 430, 1020, 170)
+				self.o5sw.show()
+				self.o5.show()
+				self.o6sw.setGeometry(660, 330, 540, 100)
+				self.o6sw.show()
+				self.o6.show()
+				self.o7sw.setGeometry(660, 150, 320, 80)
+				self.o7sw.show()
+				self.o7.show()
+				self.o8sw.setGeometry(980, 0, 220, 330)
+				self.o8sw.show()
+				self.o8.show()
+
+			if selectedText == "content":
+				self.listsw.setGeometry(0, 0, 180, 430)
+				self.listsw.show()
+				self.list.show()
+
+				self.o1sw.hide()
+				self.o1.hide()
+				self.o2sw.hide()
+				self.o2.hide()
+				self.o3sw.hide()
+				self.o3.hide()
+				self.o4sw.hide()
+				self.o4.hide()
+
+				self.o5sw.setGeometry(180, 0, 1020, 600)
+				self.o5sw.show()
+				self.o5.show()
+
+				self.o6sw.hide()
+				self.o6.hide()
+				self.o7sw.hide()
+				self.o7.hide()
+				self.o8sw.hide()
+				self.o8.hide()
+
+			if selectedText == "docs":
+				self.listsw.setGeometry(0, 0, 180, 430)
+				self.listsw.show()
+				self.list.show()
+
+				self.o1sw.hide()
+				self.o1.hide()
+				self.o2sw.hide()
+				self.o2.hide()
+
+				self.o3sw.setGeometry(180, 0, 1020, 600)
+				self.o3sw.show()
+				self.o3.show()
+
+				self.o4sw.hide()
+				self.o4.hide()
+				self.o5sw.hide()
+				self.o5.hide()
+				self.o6sw.hide()
+				self.o6.hide()
+				self.o7sw.hide()
+				self.o7.hide()
+				self.o8sw.hide()
+				self.o8.hide()
+
+			if selectedText == "array":
+				self.listsw.setGeometry(0, 0, 180, 430)
+				self.listsw.show()
+				self.list.show()
+
+				self.o1sw.hide()
+				self.o1.hide()
+				self.o2sw.hide()
+				self.o2.hide()
+				self.o3sw.hide()
+				self.o3.hide()
+				self.o4sw.hide()
+				self.o4.hide()
+				self.o5sw.hide()
+				self.o5.hide()
+				self.o6sw.hide()
+				self.o6.hide()
+				self.o7sw.hide()
+				self.o7.hide()
+
+				self.o8sw.setGeometry(180, 0, 1020, 600)
+				self.o8sw.show()
+				self.o8.show()
 
 		def showError(self, iError):
 		
