@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.3
+# Version: 2.4
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD
@@ -30,7 +30,8 @@ def showQtGUI():
 		dbSLI = [] # last index
 
 		# globals
-		defaultRoot = ""
+		gDefaultRoot = ""
+		gPalette = ""
 		gW = 1200 # width
 		gH = 600 # hight
 
@@ -47,9 +48,9 @@ def showQtGUI():
 			# set default 
 			try:
 				test = FreeCAD.activeDocument().Objects
-				self.defaultRoot = "project"
+				self.gDefaultRoot = "project"
 			except:
-				self.defaultRoot = "FreeCAD"
+				self.gDefaultRoot = "FreeCAD"
 
 			# window
 			self.result = userCancelled
@@ -89,7 +90,7 @@ def showQtGUI():
 
 			self.rootO = QtGui.QComboBox(self)
 			self.rootO.addItems(self.rootList)
-			if self.defaultRoot == "project":
+			if self.gDefaultRoot == "project":
 				self.rootO.setCurrentIndex(self.rootList.index("my project root"))
 			else:
 				self.rootO.setCurrentIndex(self.rootList.index("FreeCAD"))
@@ -126,9 +127,12 @@ def showQtGUI():
 			# options
 			self.layList = (
 				"all windows",
+				"modules",
 				"content", 
 				"docs", 
-				"array"
+				"array",
+				"matrix red pill",
+				"matrix blue pill",
 			)
 
 			self.layO = QtGui.QComboBox(self)
@@ -229,12 +233,15 @@ def showQtGUI():
 			# ############################################################################
 
 			# init default selection db
-			if self.defaultRoot == "project":
+			if self.gDefaultRoot == "project":
 				self.setRootPath("my project root")
 			else:
 				self.setRootPath("FreeCAD")
 
 			self.show()
+
+			# save colors
+			self.gPalette = self.palette()
 		
 		# ############################################################################
 		# functions
@@ -270,6 +277,34 @@ def showQtGUI():
 				self.o8sw.setGeometry(980, 0, 220, 330)
 				self.o8sw.show()
 				self.o8.show()
+
+			if selectedText == "modules":
+				self.listsw.setGeometry(0, 0, 260, 430)
+				self.listsw.show()
+				self.list.show()
+				self.o1sw.setGeometry(260, 0, 260, 500)
+				self.o1sw.show()
+				self.o1.show()
+				self.o2sw.setGeometry(520, 0, 220, 500)
+				self.o2sw.show()
+				self.o2.show()
+				self.o3sw.setGeometry(740, 0, 460, 500)
+				self.o3sw.show()
+				self.o3.show()
+
+				self.o4sw.hide()
+				self.o4.hide()
+
+				self.o5sw.setGeometry(260, 500, 1020, 100)
+				self.o5sw.show()
+				self.o5.show()
+
+				self.o6sw.hide()
+				self.o6.hide()
+				self.o7sw.hide()
+				self.o7.hide()
+				self.o8sw.hide()
+				self.o8.hide()
 
 			if selectedText == "content":
 				self.listsw.setGeometry(0, 0, 180, 430)
@@ -344,6 +379,15 @@ def showQtGUI():
 				self.o8sw.setGeometry(180, 0, 1020, 600)
 				self.o8sw.show()
 				self.o8.show()
+
+			if selectedText == "matrix red pill":
+				p = QtGui.QPalette()
+				p.setColor(p.Base, QtGui.QColor(0, 0, 0))
+				p.setColor(p.Text, QtGui.QColor(0, 255, 0))
+				self.setPalette(p)
+
+			if selectedText == "matrix blue pill":
+				self.setPalette(self.gPalette)
 
 		def showError(self, iError):
 		
