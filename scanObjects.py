@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.4
+# Version: 2.5
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD
@@ -295,7 +295,7 @@ def showQtGUI():
 				self.o4sw.hide()
 				self.o4.hide()
 
-				self.o5sw.setGeometry(260, 500, 1020, 100)
+				self.o5sw.setGeometry(260, 500, 940, 100)
 				self.o5sw.show()
 				self.o5.show()
 
