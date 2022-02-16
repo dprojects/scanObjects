@@ -2,7 +2,7 @@
 
 # Inspection tool for FreeCAD macro development.
 # Author: Darek L (aka dprojects)
-# Version: 2.5
+# Version: 3.0
 # Latest version: https://github.com/dprojects/scanObjects
 
 import FreeCAD
@@ -29,11 +29,45 @@ def showQtGUI():
 		dbSP = [] # path
 		dbSLI = [] # last index
 
+		def clearDB(self):
+
+			self.dbSO = [] # objects
+			self.dbSL = [] # labels
+			self.dbSI = -1 # index
+			self.dbSP = [] # path
+			self.dbSLI = [] # last index
+
+		# ############################################################################
 		# globals
+		# ############################################################################
+
 		gDefaultRoot = ""
 		gPalette = ""
+		gModeType = "normal"
 		gW = 1200 # width
 		gH = 600 # hight
+
+		# ############################################################################
+		# errors & info
+		# ############################################################################
+
+		def showMsg(self, iMsg, iType = "error"):
+		
+			try:
+				if iType == "info":	
+					msg = ""
+					msg += "INFO: "
+					msg += " | "
+					msg += str(iMsg)	
+				else:	
+					msg = ""
+					msg += "ERROR: "
+					msg += " | "
+					msg += str(iMsg)
+
+				self.o5.setPlainText(msg)
+			except:
+				self.o5.setPlainText("kernel panic or even FreeCAD panic :-)")
 
 		# ############################################################################
 		# init
@@ -52,7 +86,7 @@ def showQtGUI():
 			except:
 				self.gDefaultRoot = "FreeCAD"
 
-			# window
+			# main window
 			self.result = userCancelled
 			self.setGeometry(10, 10, self.gW, self.gH)
 			self.setWindowTitle("scanObjects - inspection tool for macro development")
@@ -64,8 +98,7 @@ def showQtGUI():
 
 			self.list = QtGui.QListView()
 			self.listsw = QtGui.QMdiSubWindow(self)
-			self.listsw.setWindowTitle("Select object:")
-			self.listsw.setGeometry(0, 0, 180, 430)
+			self.listsw.setWindowTitle("Select object :")
 			self.listsw.setWidget(self.list)
 
 			# ############################################################################
@@ -130,7 +163,7 @@ def showQtGUI():
 				"modules",
 				"content", 
 				"docs", 
-				"array",
+				"object",
 				"matrix red pill",
 				"matrix blue pill",
 			)
@@ -147,8 +180,7 @@ def showQtGUI():
 
 			self.o1 = QtGui.QTextEdit()
 			self.o1sw = QtGui.QMdiSubWindow(self)
-			self.o1sw.setWindowTitle("dir(): & Help Window")
-			self.o1sw.setGeometry(180, 0, 260, 430)
+			self.o1sw.setWindowTitle("Help Window & dir() :")
 			self.o1sw.setWidget(self.o1)
 
 			# ############################################################################
@@ -157,8 +189,7 @@ def showQtGUI():
 			
 			self.o2 = QtGui.QTextEdit()
 			self.o2sw = QtGui.QMdiSubWindow(self)
-			self.o2sw.setWindowTitle("__dict__:")
-			self.o2sw.setGeometry(440, 0, 220, 430)
+			self.o2sw.setWindowTitle("__dict__ :")
 			self.o2sw.setWidget(self.o2)
 			
 			# ############################################################################
@@ -167,8 +198,7 @@ def showQtGUI():
 
 			self.o3 = QtGui.QTextEdit()
 			self.o3sw = QtGui.QMdiSubWindow(self)
-			self.o3sw.setWindowTitle("__doc__:")
-			self.o3sw.setGeometry(660, 0, 320, 150)
+			self.o3sw.setWindowTitle("__doc__ :")
 			self.o3sw.setWidget(self.o3)
 
 			# ############################################################################
@@ -177,8 +207,7 @@ def showQtGUI():
 
 			self.o4 = QtGui.QTextEdit()
 			self.o4sw = QtGui.QMdiSubWindow(self)
-			self.o4sw.setWindowTitle("getAllDerivedFrom():")
-			self.o4sw.setGeometry(660, 230, 320, 100)
+			self.o4sw.setWindowTitle("getAllDerivedFrom() :")
 			self.o4sw.setWidget(self.o4)
 
 			# ############################################################################
@@ -187,8 +216,7 @@ def showQtGUI():
 
 			self.o5 = QtGui.QTextEdit()
 			self.o5sw = QtGui.QMdiSubWindow(self)
-			self.o5sw.setWindowTitle("Content & Error Console:")
-			self.o5sw.setGeometry(180, 430, 1020, 170)
+			self.o5sw.setWindowTitle("Content & Error Console :")
 			self.o5sw.setWidget(self.o5)
 
 			# ############################################################################
@@ -197,29 +225,8 @@ def showQtGUI():
 
 			self.o6 = QtGui.QTextEdit()
 			self.o6sw = QtGui.QMdiSubWindow(self)
-			self.o6sw.setWindowTitle("<class 'str'>:")
-			self.o6sw.setGeometry(660, 330, 540, 100)
+			self.o6sw.setWindowTitle("Object parse view :")
 			self.o6sw.setWidget(self.o6)
-
-			# ############################################################################
-			# output 7
-			# ############################################################################
-
-			self.o7 = QtGui.QTextEdit()
-			self.o7sw = QtGui.QMdiSubWindow(self)
-			self.o7sw.setWindowTitle("<class 'float'>:")
-			self.o7sw.setGeometry(660, 150, 320, 80)
-			self.o7sw.setWidget(self.o7)
-
-			# ############################################################################
-			# output 8
-			# ############################################################################
-
-			self.o8 = QtGui.QTextEdit()
-			self.o8sw = QtGui.QMdiSubWindow(self)
-			self.o8sw.setWindowTitle("<class 'list'>:")
-			self.o8sw.setGeometry(980, 0, 220, 330)
-			self.o8sw.setWidget(self.o8)
 
 			# ############################################################################
 			# keyboard keys
@@ -229,7 +236,7 @@ def showQtGUI():
 			QtGui.QShortcut(QtGui.QKeySequence("right"), self, self.keyRight)
 
 			# ############################################################################
-			# show
+			# show & init defaults
 			# ############################################################################
 
 			# init default selection db
@@ -238,45 +245,44 @@ def showQtGUI():
 			else:
 				self.setRootPath("FreeCAD")
 
+			# show window
 			self.show()
+
+			# set default layout
+			self.setWindowsLayout("all windows")
 
 			# save colors
 			self.gPalette = self.palette()
-		
+			
 		# ############################################################################
-		# functions
+		# actions
 		# ############################################################################
 
 		def setWindowsLayout(self, selectedText):
 
 			if selectedText == "all windows":
-				self.listsw.setGeometry(0, 0, 180, 430)
+
+				self.listsw.setGeometry(0, 0, 180, 430) # select
 				self.listsw.show()
 				self.list.show()
-				self.o1sw.setGeometry(180, 0, 260, 430)
+				self.o1sw.setGeometry(180, 0, 260, 430) # dir
 				self.o1sw.show()
 				self.o1.show()
-				self.o2sw.setGeometry(440, 0, 220, 430)
+				self.o2sw.setGeometry(440, 0, 220, 430) # __dict__
 				self.o2sw.show()
 				self.o2.show()
-				self.o3sw.setGeometry(660, 0, 320, 150)
+				self.o3sw.setGeometry(660, 0, 540, 150) # __doc__
 				self.o3sw.show()
 				self.o3.show()
-				self.o4sw.setGeometry(660, 230, 320, 100)
+				self.o4sw.setGeometry(660, 330, 540, 100) # getAllDerivedFrom
 				self.o4sw.show()
 				self.o4.show()
-				self.o5sw.setGeometry(180, 430, 1020, 170)
+				self.o5sw.setGeometry(180, 430, 1020, 170) # content
 				self.o5sw.show()
 				self.o5.show()
-				self.o6sw.setGeometry(660, 330, 540, 100)
+				self.o6sw.setGeometry(660, 150, 540, 180) # object
 				self.o6sw.show()
 				self.o6.show()
-				self.o7sw.setGeometry(660, 150, 320, 80)
-				self.o7sw.show()
-				self.o7.show()
-				self.o8sw.setGeometry(980, 0, 220, 330)
-				self.o8sw.show()
-				self.o8.show()
 
 			if selectedText == "modules":
 				self.listsw.setGeometry(0, 0, 260, 430)
@@ -301,10 +307,6 @@ def showQtGUI():
 
 				self.o6sw.hide()
 				self.o6.hide()
-				self.o7sw.hide()
-				self.o7.hide()
-				self.o8sw.hide()
-				self.o8.hide()
 
 			if selectedText == "content":
 				self.listsw.setGeometry(0, 0, 180, 430)
@@ -326,10 +328,6 @@ def showQtGUI():
 
 				self.o6sw.hide()
 				self.o6.hide()
-				self.o7sw.hide()
-				self.o7.hide()
-				self.o8sw.hide()
-				self.o8.hide()
 
 			if selectedText == "docs":
 				self.listsw.setGeometry(0, 0, 180, 430)
@@ -351,12 +349,8 @@ def showQtGUI():
 				self.o5.hide()
 				self.o6sw.hide()
 				self.o6.hide()
-				self.o7sw.hide()
-				self.o7.hide()
-				self.o8sw.hide()
-				self.o8.hide()
 
-			if selectedText == "array":
+			if selectedText == "object":
 				self.listsw.setGeometry(0, 0, 180, 430)
 				self.listsw.show()
 				self.list.show()
@@ -371,44 +365,22 @@ def showQtGUI():
 				self.o4.hide()
 				self.o5sw.hide()
 				self.o5.hide()
-				self.o6sw.hide()
-				self.o6.hide()
-				self.o7sw.hide()
-				self.o7.hide()
-
-				self.o8sw.setGeometry(180, 0, 1020, 600)
-				self.o8sw.show()
-				self.o8.show()
+				self.o6sw.setGeometry(180, 0, 1020, 600)
+				self.o6sw.show()
+				self.o6.show()
 
 			if selectedText == "matrix red pill":
 				p = QtGui.QPalette()
 				p.setColor(p.Base, QtGui.QColor(0, 0, 0))
 				p.setColor(p.Text, QtGui.QColor(0, 255, 0))
 				self.setPalette(p)
-
+				self.gModeType = "matrix"
+				self.resetOutputs()
+				
 			if selectedText == "matrix blue pill":
 				self.setPalette(self.gPalette)
-
-		def showError(self, iError):
-		
-			try:
-				e = ""
-				e += "ERROR: "
-				e += " | "
-				e += str(iError)
-
-				self.o5.setPlainText(e)
-			except:
-				self.o5.setPlainText("kernel panic or even FreeCAD panic :-)")
-				
-		def clearDB(self):
-
-			# database for selection
-			self.dbSO = [] # objects
-			self.dbSL = [] # labels
-			self.dbSI = -1 # index
-			self.dbSP = [] # path
-			self.dbSLI = [] # last index
+				self.gModeType = "normal"
+				self.resetOutputs()
 
 		def setRootPath(self, selectedText):
 
@@ -422,7 +394,10 @@ def showQtGUI():
 					rootS= "FreeCAD.activeDocument().Objects"
 					self.addSelection("", root, rootS, -1)
 				except:
-					self.showError("You have to set active document (project) to use this root path.")
+					if self.gModeType == "matrix":
+						self.showMsg("You need to release project first to enter the matrix ;-)")
+					else:
+						self.showMsg("You have to set active document (project) to use this root path.")
 
 			if selectedText == "FreeCAD":
 
@@ -491,7 +466,10 @@ def showQtGUI():
 				self.addSelection(module, root, rootS, -1)
 
 			except:
-				self.showError("Can't load module: "+rootS)
+				if self.gModeType == "matrix":
+					self.showMsg("This module is outside the matrix: "+rootS)
+				else:
+					self.showMsg("Can't load module: "+rootS)
 				
 		def setOutput(self, iObj):
 
@@ -608,7 +586,7 @@ def showQtGUI():
 				skip = 1
 
 			# ########################################				
-			# output 6
+			# output 6 - object window
 			# ########################################
 
 			skip = 0
@@ -619,55 +597,38 @@ def showQtGUI():
 				skip = 1
 
 			try:
+
+				# <class 'str'>
 				if skip == 0 and isinstance(result, str):
 					self.o6.setPlainText(str(result))
-				else:
-					self.o6.setPlainText("")
-			except:
-				skip = 1
 
-			# ########################################				
-			# output 7
-			# ########################################
+				# <class 'float'>
+				elif skip == 0 and isinstance(result, float):
+					self.o6.setPlainText(str(result))
 
-			skip = 0
+				# <class 'list'>
+				elif skip == 0 and isinstance(result, list):
 
-			try:
-				result = self.dbSO[self.dbSI][index]
-			except:
-				skip = 1
-
-			try:
-				if skip == 0 and isinstance(result, float):
-					self.o7.setPlainText(str(result))
-				else:
-					self.o7.setPlainText("")
-			except:
-				skip = 1
-
-			# ########################################				
-			# output 8
-			# ########################################
-
-			skip = 0
-
-			try:
-				result = self.dbSO[self.dbSI][index]
-			except:
-				skip = 1
-
-			try:
-				if skip == 0 and isinstance(result, list):
-
-					o8 = ""
+					o6 = ""
 					for row in result:
-						o8 += str(row) + "\n"
+						o6 += str(row) + "\n"
 					
-					self.o8.setPlainText(o8)
+					self.o6.setPlainText(o6)
+
+				# show raw object
 				else:
-					self.o8.setPlainText("")
+					self.o6.setPlainText(str(result))
+
+				# set window title to object type
+				self.o6sw.setWindowTitle(str(type(result)) + " :")
+
 			except:
 				skip = 1
+
+
+		# ########################################				
+		# selection path
+		# ########################################
 	
 		def getSelectionPath(self):
 
@@ -681,20 +642,36 @@ def showQtGUI():
 
 			path = self.getSelectionPath()
 
-			info = ""
-			info += "Your current selection path is:"
-			info += "\n\n"
-			info += path
-			info += "\n\n\n"
-			info += "Usage:"
-			info += "\n"
-			info += "→ \t | go deeper"
-			info += "\n"
-			info += "← \t | go back"
-			info += "\n"
-			info += "↑ ↓ \t | select object"
-			info += "\n\n"
-			info += "Use ↑ ↓ arrow keys to select object and start inspection at this path."
+			if self.gModeType == "matrix":
+				info = ""
+				info += "Current rabbit hole is:"
+				info += "\n\n"
+				info += path
+				info += "\n\n\n"
+				info += "Usage:"
+				info += "\n"
+				info += "→ \t | go deeper"
+				info += "\n"
+				info += "← \t | go back"
+				info += "\n"
+				info += "↑ ↓ \t | select rabbit hole"
+				info += "\n\n"
+				info += "Use ↑ ↓ arrow keys to select rabbit hole and enter the matrix."
+			else:
+				info = ""
+				info += "Your current selection path is:"
+				info += "\n\n"
+				info += path
+				info += "\n\n\n"
+				info += "Usage:"
+				info += "\n"
+				info += "→ \t | go deeper"
+				info += "\n"
+				info += "← \t | go back"
+				info += "\n"
+				info += "↑ ↓ \t | select object"
+				info += "\n\n"
+				info += "Use ↑ ↓ arrow keys to select object and start inspection at this path."
 
 			self.o1.setPlainText(info)
 			self.o2.setPlainText("")
@@ -702,8 +679,10 @@ def showQtGUI():
 			self.o4.setPlainText("")
 			self.o5.setPlainText("")
 			self.o6.setPlainText("")
-			self.o7.setPlainText("")
-			self.o8.setPlainText("")
+
+		# ########################################				
+		# selection
+		# ########################################
 
 		def updateSelection(self):
 
@@ -793,6 +772,12 @@ def showQtGUI():
 
 				# update selection list
 				self.updateSelection()
+
+			else:
+				if self.gModeType == "matrix":
+					self.showMsg("This is the end of the rabbit hole. Go back quickly before you get lost ;-)", "info")
+				else:
+					self.showMsg("Can't parse this object structure deeper. Check deeper at the python console.", "info")
 
 		# ############################################################################
 		# actions for keyboard keys
