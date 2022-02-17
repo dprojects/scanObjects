@@ -42,7 +42,6 @@ def showQtGUI():
 		# ############################################################################
 
 		gDefaultRoot = ""
-		gPalette = ""
 		gModeType = "normal"
 		gW = 1200 # width
 		gH = 600 # hight
@@ -251,8 +250,8 @@ def showQtGUI():
 			# set default layout
 			self.setWindowsLayout("all windows")
 
-			# save colors
-			self.gPalette = self.palette()
+			# init colors
+			self.setWindowsLayout("matrix blue pill")
 			
 		# ############################################################################
 		# actions
@@ -370,15 +369,56 @@ def showQtGUI():
 				self.o6.show()
 
 			if selectedText == "matrix red pill":
-				p = QtGui.QPalette()
-				p.setColor(p.Base, QtGui.QColor(0, 0, 0))
-				p.setColor(p.Text, QtGui.QColor(0, 255, 0))
-				self.setPalette(p)
+
+				# decoration 
+				QtCSS =  '''
+					QDialog, QScrollBar {
+						background-color: black;
+					}
+
+					QMdiSubWindow {
+						color: green;
+						background-color: black;
+						selection-color: white;
+						selection-background-color: black;
+					}
+
+					QTextEdit, QListView, QComboBox {
+						color: green;
+						background-color: qlineargradient( 
+							x1: 0, y1: 0, 
+							x2: 15, y2: 15,
+							stop: 0 #000000, stop: 1 #00FF00
+						);
+						border: 0px;
+						border-right: 1px dotted green;
+						border-bottom: 1px dotted green;
+						selection-color: white;
+						selection-background-color: black;
+					}
+
+					QLabel { 
+						color: white;
+						background-color: black;
+					}
+										
+					QLineEdit, QPushButton {
+						color: green;
+						background-color: qlineargradient( 
+							x1: 0, y1: 0, 
+							x2: 10, y2: 10,
+							stop: 0 #000000, stop: 1 #00FF00
+						);
+						border: 1px dotted green;
+					}
+				'''
+
+				self.setStyleSheet(QtCSS)
 				self.gModeType = "matrix"
 				self.resetOutputs()
 				
 			if selectedText == "matrix blue pill":
-				self.setPalette(self.gPalette)
+				self.setStyleSheet("")
 				self.gModeType = "normal"
 				self.resetOutputs()
 
