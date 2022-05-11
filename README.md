@@ -2,15 +2,21 @@
 
 This is inspection tool for FreeCAD macro development.
 
-![001](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/001.png)
+![000](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/000.gif)
 
-![002](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/002.png)
+# Main features
 
-![003](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/003.png)
-
-![004](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/004.png)
-
-![005](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/005.png)
+* View object properties hidden in XML file (e.g.: Shape, Faces, Edges).
+* Object type auto-recognition.
+* Auto-resize to active screen size.
+* Move, resize, close, any window.
+* Quick browse predefined modules.
+* Allow to browse custom module, library or even macro.
+* Allow to browse custom command result (need to be array).
+* Quick windows positioning (layouts).
+* Color schemas.
+* Quick browse via cursors.
+* Allow to quick copy window content.
 
 # Contact
 
