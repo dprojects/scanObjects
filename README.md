@@ -1,6 +1,6 @@
 # Description
 
-<img align="left" src="https://raw.githubusercontent.com/dprojects/Woodworking/master/Icons/scanObjects.png"> This is inspection tool for FreeCAD macro development. It allows for code debugging, browing FreeCAD modules, live API. 
+<img align="left" src="https://raw.githubusercontent.com/dprojects/Woodworking/master/Icons/scanObjects.png"> This is inspection tool for FreeCAD macro development. It allows for code debugging, browsing FreeCAD modules, live API. 
 
 **Note:** This tool is also part of [Woodworking workbench](https://github.com/dprojects/Woodworking).
 
