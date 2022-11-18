@@ -6,7 +6,7 @@
 
 <br><br><br><br>
 
-![000](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/000.gif)
+![000](https://raw.githubusercontent.com/dprojects/scanObjects/master/Screenshots/intro.gif)
 
 # Main features
 
@@ -20,6 +20,7 @@
 * Quick windows positioning (layouts).
 * Funny color schemas.
 * Quick browse via cursors.
+* Selection search filter for quick parse long lists.
 * Allow to quick copy window content.
 
 # Contact
