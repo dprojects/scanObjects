@@ -23,11 +23,10 @@
 * Selection search filter for quick parse long lists.
 * Allow to quick copy window content.
 
-# Contact
-
-Please add all comments and questions to the dedicated
-[FreeCAD forum thread](https://forum.freecadweb.org/viewtopic.php?f=22&t=65395).
-
 # License
 
-MIT
+[MIT](https://github.com/dprojects/Woodworking/blob/master/LICENSE) for all Woodworking workbench content, so it is more free than FreeCAD.
+
+# Contact
+
+For questions, feature requests, please open issue at: [github.com/dprojects/Woodworking/issues](https://github.com/dprojects/Woodworking/issues)
