@@ -22,6 +22,7 @@
 * Quick browse via cursors.
 * Selection search filter for quick parse long lists.
 * Allow to quick copy window content.
+* Crash test to test FreeCAD crash during browsing not removed attributes.
 
 # License
 
